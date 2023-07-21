@@ -1,14 +1,26 @@
 "use client";
 import useOnDraw from "@/hooks/useOnDraw";
-import { CanvasProps, OnDrawType } from "@/types";
+import { CanvasProps, DrawLineType, OnDrawType } from "@/types";
 import { FC } from "react";
 
 const Canvas: FC<CanvasProps> = ({ width, height }) => {
-    const onDraw: OnDrawType = (ctx, point) => {
-        if (ctx && point) {
-            ctx.fillStyle = "#000";
+    const onDraw: OnDrawType = (ctx, point, prevPoint) => {
+        drawLine(point, prevPoint!, ctx, "#000", 5);
+    };
+
+    const drawLine: DrawLineType = (start, end, ctx, color, width) => {
+        if (ctx) {
+            start = start ?? end;
             ctx.beginPath();
-            ctx.arc(point.x, point.y, 2, 0, 2 * Math.PI);
+            ctx.lineWidth = width;
+            ctx.strokeStyle = color;
+            ctx.moveTo(start.x, start.y);
+            ctx.lineTo(end?.x, end?.y);
+            ctx.stroke();
+
+            ctx.fillStyle = color;
+            ctx.beginPath();
+            ctx.arc(start.x, start.y, 2, 0, 2 * Math.PI);
             ctx.fill();
         }
     };
