@@ -1,12 +1,31 @@
 type CanvasRefToVoid = (ref: HTMLCanvasElement) => void;
+type MouseEventListeners = (e: MouseEvent) => void;
 type ReturnVoid = () => void;
+type Point = { x: number; y: number };
 type OnDrawType = (
     ctx: CanvasRenderingContext2D | null | undefined,
-    point: { x: number; y: number } | null
+    point: Point | null,
+    prevPoint: Point | null
 ) => void;
+type DrawLineType = (
+    start: Point | null,
+    end: Point,
+    ctx: CanvasRenderingContext2D | null | undefined,
+    col: string,
+    width: number
+) => void;
+
 interface CanvasProps {
     width: number;
     height: number;
 }
 
-export type { CanvasRefToVoid, ReturnVoid, CanvasProps, OnDrawType };
+export type {
+    CanvasRefToVoid,
+    ReturnVoid,
+    CanvasProps,
+    OnDrawType,
+    MouseEventListeners,
+    DrawLineType,
+    Point,
+};
