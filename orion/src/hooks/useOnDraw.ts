@@ -7,19 +7,20 @@ import {
     Point,
     ReturnVoid,
 } from "@/types";
-import { FC, useEffect, useRef } from "react";
+import { FC, RefCallback, useEffect, useRef } from "react";
 import { Socket, io } from "socket.io-client";
 
-const useOnDraw = (onDraw: OnDrawType): CanvasRefToVoid => {
+const useOnDraw = (
+    onDraw: OnDrawType,
+    socketRef: Socket
+): RefCallback<HTMLCanvasElement> => {
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
     const isDrawingRef = useRef<boolean>(false);
     const mouseMoveListenerRef = useRef<MouseEventListeners | null>(null);
     const mouseUpListenerRef = useRef<MouseEventListeners | null>(null);
     const mouseDownListenerRef = useRef<MouseEventListeners | null>(null);
     const prevPointRef = useRef<Point | null>(null);
-    const socketRef = useRef<Socket | null>(null);
     useEffect(() => {
-        socketRef.current = io("http://localhost:5002");
         return () => {
             if (mouseMoveListenerRef.current) {
                 window.removeEventListener(
@@ -57,9 +58,11 @@ const useOnDraw = (onDraw: OnDrawType): CanvasRefToVoid => {
                 const ctx = canvasRef.current?.getContext("2d");
                 if (onDraw) {
                     onDraw(ctx, point, prevPointRef.current);
+                    // console.log(socketRef, "useondraw");
                     let base64ImageData =
                         canvasRef.current?.toDataURL("image/png");
-                    socketRef.current?.emit("canvas-data", base64ImageData);
+                    console.log(base64ImageData);
+                    socketRef.emit("canvas-data", base64ImageData);
                 }
                 prevPointRef.current = point;
             }

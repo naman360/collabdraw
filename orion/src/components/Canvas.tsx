@@ -1,9 +1,12 @@
 "use client";
 import useOnDraw from "@/hooks/useOnDraw";
 import { CanvasProps, DrawLineType, OnDrawType } from "@/types";
-import { FC } from "react";
+import { FC, useRef } from "react";
+import { Socket, io } from "socket.io-client";
 
 const Canvas: FC<CanvasProps> = ({ width, height }) => {
+    const socketRef = useRef<Socket>(io("http://localhost:5002"));
+
     const onDraw: OnDrawType = (ctx, point, prevPoint) => {
         drawLine(point, prevPoint!, ctx, "#000", 5);
     };
@@ -25,7 +28,7 @@ const Canvas: FC<CanvasProps> = ({ width, height }) => {
         }
     };
 
-    const setCanvasref = useOnDraw(onDraw);
+    const setCanvasref = useOnDraw(onDraw, socketRef.current);
 
     return (
         <canvas

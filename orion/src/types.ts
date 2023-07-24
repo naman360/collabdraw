@@ -1,4 +1,9 @@
-type CanvasRefToVoid = (ref: HTMLCanvasElement) => void;
+import { Socket } from "socket.io-client";
+
+type CanvasRefToVoid = (
+    ref: HTMLCanvasElement,
+    socketref: Socket | null
+) => void;
 type MouseEventListeners = (e: MouseEvent) => void;
 type ReturnVoid = () => void;
 type Point = { x: number; y: number };
