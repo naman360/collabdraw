@@ -23,6 +23,7 @@ type DrawLineType = (
 interface CanvasProps {
     width: number;
     height: number;
+    socketRef: Socket | null;
 }
 
 export type {
