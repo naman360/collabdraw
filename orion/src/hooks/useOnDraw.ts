@@ -12,7 +12,7 @@ import { Socket, io } from "socket.io-client";
 
 const useOnDraw = (
     onDraw: OnDrawType,
-    socketRef: Socket
+    socketRef: Socket | null
 ): RefCallback<HTMLCanvasElement> => {
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
     const isDrawingRef = useRef<boolean>(false);
@@ -46,6 +46,15 @@ const useOnDraw = (
     function setCanvasRef(ref: HTMLCanvasElement) {
         if (!ref) return;
         canvasRef.current = ref;
+
+        socketRef?.on("canvas-data", (data) => {
+            let image = new Image();
+            let ctx = canvasRef.current?.getContext("2d");
+            image.onload = () => {
+                ctx?.drawImage(image, 0, 0);
+            };
+            image.src = data;
+        });
         initMouseMoveListener();
         initMouseDownListener();
         initMouseUpListener();
@@ -58,11 +67,11 @@ const useOnDraw = (
                 const ctx = canvasRef.current?.getContext("2d");
                 if (onDraw) {
                     onDraw(ctx, point, prevPointRef.current);
-                    // console.log(socketRef, "useondraw");
+
                     let base64ImageData =
                         canvasRef.current?.toDataURL("image/png");
-                    console.log(base64ImageData);
-                    socketRef.emit("canvas-data", base64ImageData);
+
+                    socketRef?.emit("canvas-data", base64ImageData);
                 }
                 prevPointRef.current = point;
             }
