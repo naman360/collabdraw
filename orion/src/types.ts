@@ -10,7 +10,9 @@ type Point = { x: number; y: number };
 type OnDrawType = (
     ctx: CanvasRenderingContext2D | null | undefined,
     point: Point | null,
-    prevPoint: Point | null
+    prevPoint: Point | null,
+    brushColor: string,
+    brushSize: number
 ) => void;
 type DrawLineType = (
     start: Point | null,
@@ -24,6 +26,8 @@ interface CanvasProps {
     width: number;
     height: number;
     socketRef: Socket | null;
+    brushColor: string;
+    brushSize: number;
 }
 
 export type {

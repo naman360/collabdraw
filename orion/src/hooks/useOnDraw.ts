@@ -12,7 +12,9 @@ import { Socket, io } from "socket.io-client";
 
 const useOnDraw = (
     onDraw: OnDrawType,
-    socketRef: Socket | null
+    socketRef: Socket | null,
+    brushSize: number,
+    brushColor: string
 ): RefCallback<HTMLCanvasElement> => {
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
     const isDrawingRef = useRef<boolean>(false);
@@ -20,6 +22,13 @@ const useOnDraw = (
     const mouseUpListenerRef = useRef<MouseEventListeners | null>(null);
     const mouseDownListenerRef = useRef<MouseEventListeners | null>(null);
     const prevPointRef = useRef<Point | null>(null);
+    const brushSizeRef = useRef<number>(5);
+    const brushColorRef = useRef<string>("#000");
+
+    useEffect(() => {
+        brushColorRef.current = brushColor;
+        brushSizeRef.current = brushSize;
+    }, [brushColor, brushSize]);
     useEffect(() => {
         return () => {
             if (mouseMoveListenerRef.current) {
@@ -66,7 +75,13 @@ const useOnDraw = (
                 const point = computePointsToDraw(e.clientX, e.clientY);
                 const ctx = canvasRef.current?.getContext("2d");
                 if (onDraw) {
-                    onDraw(ctx, point, prevPointRef.current);
+                    onDraw(
+                        ctx,
+                        point,
+                        prevPointRef.current,
+                        brushColorRef.current,
+                        brushSizeRef.current
+                    );
 
                     let base64ImageData =
                         canvasRef.current?.toDataURL("image/png");
