@@ -4,7 +4,7 @@ import { CanvasProps, DrawLineType, OnDrawType } from "@/types";
 import { FC, useEffect, useRef } from "react";
 import { Socket, io } from "socket.io-client";
 
-const Canvas: FC<CanvasProps> = ({ width, height, socketRef }) => {
+const Canvas: FC<CanvasProps> = ({ width, height, socketRef, brushColor }) => {
     const onDraw: OnDrawType = (ctx, point, prevPoint) => {
         drawLine(point, prevPoint!, ctx, "#000", 5);
     };
@@ -14,12 +14,12 @@ const Canvas: FC<CanvasProps> = ({ width, height, socketRef }) => {
             start = start ?? end;
             ctx.beginPath();
             ctx.lineWidth = width;
-            ctx.strokeStyle = color;
+            ctx.strokeStyle = brushColor;
             ctx.moveTo(start.x, start.y);
             ctx.lineTo(end?.x, end?.y);
             ctx.stroke();
 
-            ctx.fillStyle = color;
+            ctx.fillStyle = brushColor;
             ctx.beginPath();
             ctx.arc(start.x, start.y, 2, 0, 2 * Math.PI);
             ctx.fill();
