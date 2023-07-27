@@ -52,10 +52,16 @@ const useOnDraw = (
         };
     }, []);
 
+    function setCanvasStyles() {
+        if (canvasRef.current) {
+            canvasRef.current.style.cursor = "crosshair";
+        }
+    }
+
     function setCanvasRef(ref: HTMLCanvasElement) {
         if (!ref) return;
         canvasRef.current = ref;
-
+        setCanvasStyles();
         socketRef?.on("canvas-data", (data) => {
             let image = new Image();
             let ctx = canvasRef.current?.getContext("2d");

@@ -16,12 +16,13 @@ const Home: FC = () => {
         <div className="h-screen w-full flex flex-column">
             <div className="p-2 flex flex-col items-center justify-center bg-slate-900">
                 <input
+                    className="cursor-pointer"
                     type="color"
                     onChange={(e) => setBrushColor(e.target.value)}
                 />
 
                 <select
-                    className="mt-3"
+                    className="mt-3 cursor-pointer"
                     onChange={(e) => setBrushSize(parseInt(e.target.value))}
                 >
                     <option value="5">5</option>
