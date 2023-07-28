@@ -7,7 +7,7 @@ import {
     Point,
     ReturnVoid,
 } from "@/types";
-import { FC, RefCallback, RefObject, useEffect, useRef } from "react";
+import { RefCallback, RefObject, useEffect, useRef } from "react";
 import { Socket, io } from "socket.io-client";
 
 const useOnDraw = (
@@ -26,8 +26,9 @@ const useOnDraw = (
     const prevPointRef = useRef<Point | null>(null);
     const brushSizeRef = useRef<number>(5);
     const brushColorRef = useRef<string>("#000");
+    const timeoutRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-    const mouseStartPoints = useRef<{ x: number; y: number } | null>({
+    const mouseStartPoints = useRef<Point | null>({
         x: -1,
         y: -1,
     });
@@ -65,21 +66,52 @@ const useOnDraw = (
         }
     }
 
+    function drawReceivedDataOnCanvas(
+        ctx: CanvasRenderingContext2D | null | undefined,
+        object: {
+            type: string;
+            data: { point: Point; prevPoint: Point };
+        }
+    ) {
+        switch (object.type) {
+            case "free":
+                onDraw(
+                    ctx,
+                    object.data.point,
+                    object.data.prevPoint,
+                    brushColorRef.current,
+                    brushSizeRef.current,
+                    "free"
+                );
+                break;
+            // case "rect":
+            //     handleRectangle(point, endPoints!, ctx, brushColor, brushSize);
+            //     break;
+        }
+    }
+
     function setCanvasRef(ref: HTMLCanvasElement) {
         if (!ref) return;
         canvasRef.current = ref;
         setCanvasStyles();
-        socketRef?.on("canvas-data", (data) => {
-            let image = new Image();
-            let ctx = canvasRef.current?.getContext("2d");
-            image.onload = () => {
-                ctx?.drawImage(image, 0, 0);
-            };
-            image.src = data;
+        let ctx = canvasRef.current?.getContext("2d");
+
+        socketRef?.on("canvas-data", (object) => {
+            drawReceivedDataOnCanvas(ctx, object);
         });
         initMouseMoveListener();
         initMouseDownListener();
         initMouseUpListener();
+    }
+
+    function sendDataToConnections(point: Point | null) {
+        if (!timeoutRef.current) clearTimeout(timeoutRef.current!);
+        timeoutRef.current = setTimeout(() => {
+            socketRef?.emit("canvas-data", {
+                type: "free",
+                data: { point, prevPoint: prevPointRef.current },
+            });
+        }, 20);
     }
 
     function initMouseMoveListener() {
@@ -96,11 +128,7 @@ const useOnDraw = (
                         brushSizeRef.current,
                         "free"
                     );
-
-                    // let base64ImageData =
-                    //     canvasRef.current?.toDataURL("image/png");
-
-                    // socketRef?.emit("canvas-data", base64ImageData);
+                    sendDataToConnections(point);
                 }
                 prevPointRef.current = point;
             } else if (isDrawRectRef.current) {

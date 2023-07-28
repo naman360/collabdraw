@@ -1,6 +1,12 @@
 "use client";
 import useOnDraw from "@/hooks/useOnDraw";
-import { CanvasProps, DrawRectangleType, DrawType, OnDrawType } from "@/types";
+import {
+    CanvasProps,
+    DrawRectangleType,
+    DrawType,
+    OnDrawType,
+    Point,
+} from "@/types";
 import { FC, useRef } from "react";
 
 const Canvas: FC<CanvasProps> = ({
@@ -11,10 +17,7 @@ const Canvas: FC<CanvasProps> = ({
     brushSize,
     isDrawRect,
 }) => {
-    const rectangles = useRef<
-        | { start: { x: number; y: number }; end: { x: number; y: number } }[]
-        | []
-    >([]);
+    const rectangles = useRef<{ start: Point; end: Point }[] | []>([]);
 
     const onDraw: OnDrawType = (
         ctx,
@@ -47,8 +50,6 @@ const Canvas: FC<CanvasProps> = ({
 
     const handleRectangle: DrawType = (start, end, ctx, color, width) => {
         const allRectangles = [...rectangles.current];
-        console.log(allRectangles);
-        console.log(allRectangles);
         const lastRectangle =
             allRectangles.length > 0
                 ? allRectangles[allRectangles.length - 1]
@@ -90,6 +91,7 @@ const Canvas: FC<CanvasProps> = ({
     const drawLine: DrawType = (start, end, ctx, color, width) => {
         if (ctx) {
             start = start ?? end;
+
             ctx.beginPath();
             ctx.lineWidth = width;
             ctx.strokeStyle = color;
