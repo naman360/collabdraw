@@ -10,24 +10,33 @@ type Point = { x: number; y: number };
 type OnDrawType = (
     ctx: CanvasRenderingContext2D | null | undefined,
     point: Point | null,
-    prevPoint: Point | null,
+    endPoints: Point | null,
     brushColor: string,
-    brushSize: number
+    brushSize: number,
+    type: string
 ) => void;
-type DrawLineType = (
+type DrawType = (
     start: Point | null,
     end: Point,
     ctx: CanvasRenderingContext2D | null | undefined,
     col: string,
     width: number
 ) => void;
-
+type DrawRectangleType = (
+    ctx: CanvasRenderingContext2D | null | undefined,
+    color: string,
+    width: number,
+    allRectangles:
+        | { start: { x: number; y: number }; end: { x: number; y: number } }[]
+        | []
+) => void;
 interface CanvasProps {
     width: number;
     height: number;
     socketRef: Socket | null;
     brushColor: string;
     brushSize: number;
+    isDrawRect: boolean;
 }
 
 export type {
@@ -36,6 +45,7 @@ export type {
     CanvasProps,
     OnDrawType,
     MouseEventListeners,
-    DrawLineType,
+    DrawType,
+    DrawRectangleType,
     Point,
 };

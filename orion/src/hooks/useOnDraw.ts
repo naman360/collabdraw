@@ -7,17 +7,19 @@ import {
     Point,
     ReturnVoid,
 } from "@/types";
-import { FC, RefCallback, useEffect, useRef } from "react";
+import { FC, RefCallback, RefObject, useEffect, useRef } from "react";
 import { Socket, io } from "socket.io-client";
 
 const useOnDraw = (
     onDraw: OnDrawType,
     socketRef: Socket | null,
     brushSize: number,
-    brushColor: string
-): RefCallback<HTMLCanvasElement> => {
+    brushColor: string,
+    isDrawRect: boolean
+): [RefObject<HTMLCanvasElement>, RefCallback<HTMLCanvasElement>] => {
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
     const isDrawingRef = useRef<boolean>(false);
+    const isDrawRectRef = useRef<boolean>(false);
     const mouseMoveListenerRef = useRef<MouseEventListeners | null>(null);
     const mouseUpListenerRef = useRef<MouseEventListeners | null>(null);
     const mouseDownListenerRef = useRef<MouseEventListeners | null>(null);
@@ -25,10 +27,15 @@ const useOnDraw = (
     const brushSizeRef = useRef<number>(5);
     const brushColorRef = useRef<string>("#000");
 
+    const mouseStartPoints = useRef<{ x: number; y: number } | null>({
+        x: -1,
+        y: -1,
+    });
+
     useEffect(() => {
         brushColorRef.current = brushColor;
         brushSizeRef.current = brushSize;
-    }, [brushColor, brushSize]);
+    }, [brushColor, brushSize, isDrawRect]);
     useEffect(() => {
         return () => {
             if (mouseMoveListenerRef.current) {
@@ -77,24 +84,38 @@ const useOnDraw = (
 
     function initMouseMoveListener() {
         const mouseMoveListener = (e: MouseEvent) => {
+            const ctx = canvasRef.current?.getContext("2d");
             if (isDrawingRef.current) {
                 const point = computePointsToDraw(e.clientX, e.clientY);
-                const ctx = canvasRef.current?.getContext("2d");
                 if (onDraw) {
                     onDraw(
                         ctx,
                         point,
                         prevPointRef.current,
                         brushColorRef.current,
-                        brushSizeRef.current
+                        brushSizeRef.current,
+                        "free"
                     );
 
-                    let base64ImageData =
-                        canvasRef.current?.toDataURL("image/png");
+                    // let base64ImageData =
+                    //     canvasRef.current?.toDataURL("image/png");
 
-                    socketRef?.emit("canvas-data", base64ImageData);
+                    // socketRef?.emit("canvas-data", base64ImageData);
                 }
                 prevPointRef.current = point;
+            } else if (isDrawRectRef.current) {
+                const point = mouseStartPoints.current;
+                const endPoints = computePointsToDraw(e.clientX, e.clientY);
+                if (onDraw) {
+                    onDraw(
+                        ctx,
+                        point,
+                        endPoints,
+                        brushColorRef.current,
+                        brushSizeRef.current,
+                        "rect"
+                    );
+                }
             }
         };
         mouseMoveListenerRef.current = mouseMoveListener;
@@ -104,6 +125,8 @@ const useOnDraw = (
     function initMouseUpListener() {
         const mouseUpListener = () => {
             isDrawingRef.current = false;
+            isDrawRectRef.current = false;
+
             prevPointRef.current = null;
         };
         mouseUpListenerRef.current = mouseUpListener;
@@ -111,8 +134,18 @@ const useOnDraw = (
     }
 
     function initMouseDownListener() {
-        const mouseDownListener = () => {
-            isDrawingRef.current = true;
+        const mouseDownListener = (e: MouseEvent) => {
+            mouseStartPoints.current = computePointsToDraw(
+                e.clientX,
+                e.clientY
+            );
+
+            if (isDrawRect) {
+                isDrawingRef.current = false;
+                isDrawRectRef.current = true;
+            } else {
+                isDrawingRef.current = true;
+            }
         };
         mouseDownListenerRef.current = mouseDownListener;
         window.addEventListener("mousedown", mouseDownListener);
@@ -128,6 +161,6 @@ const useOnDraw = (
         }
         return null;
     }
-    return setCanvasRef;
+    return [canvasRef, setCanvasRef];
 };
 export default useOnDraw;
