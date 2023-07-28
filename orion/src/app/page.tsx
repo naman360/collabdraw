@@ -14,8 +14,8 @@ const Home: FC = () => {
     }, []);
 
     return (
-        <div className="h-screen w-full flex flex-column">
-            <div className="p-2 flex flex-col items-center justify-center bg-slate-900">
+        <div className="h-screen p-2 w-full flex flex-column items-center">
+            <div className="p-2 flex flex-col items-center justify-center bg-slate-200 border border-black rounded-lg h-3/4">
                 <input
                     className="cursor-pointer"
                     type="color"
