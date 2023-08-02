@@ -70,7 +70,7 @@ const useOnDraw = (
         ctx: CanvasRenderingContext2D | null | undefined,
         object: {
             type: string;
-            data: { point: Point; prevPoint: Point };
+            data: { point: Point; prevPoint: Point; endPoints: Point };
         }
     ) {
         switch (object.type) {
@@ -84,9 +84,16 @@ const useOnDraw = (
                     "free"
                 );
                 break;
-            // case "rect":
-            //     handleRectangle(point, endPoints!, ctx, brushColor, brushSize);
-            //     break;
+            case "rect":
+                onDraw(
+                    ctx,
+                    object.data.point,
+                    object.data.endPoints,
+                    brushColorRef.current,
+                    brushSizeRef.current,
+                    "rect"
+                );
+                break;
         }
     }
 
@@ -104,12 +111,16 @@ const useOnDraw = (
         initMouseUpListener();
     }
 
-    function sendDataToConnections(point: Point | null) {
+    function sendDataToConnections(
+        type: string,
+        point: Point | null,
+        endPoints: Point | null
+    ) {
         if (!timeoutRef.current) clearTimeout(timeoutRef.current!);
         timeoutRef.current = setTimeout(() => {
             socketRef?.emit("canvas-data", {
-                type: "free",
-                data: { point, prevPoint: prevPointRef.current },
+                type,
+                data: { point, prevPoint: prevPointRef.current, endPoints },
             });
         }, 20);
     }
@@ -128,7 +139,7 @@ const useOnDraw = (
                         brushSizeRef.current,
                         "free"
                     );
-                    sendDataToConnections(point);
+                    sendDataToConnections("free", point, null);
                 }
                 prevPointRef.current = point;
             } else if (isDrawRectRef.current) {
@@ -143,6 +154,7 @@ const useOnDraw = (
                         brushSizeRef.current,
                         "rect"
                     );
+                    sendDataToConnections("rect", point, endPoints);
                 }
             }
         };
