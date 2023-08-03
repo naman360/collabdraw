@@ -17,7 +17,16 @@ const Canvas: FC<CanvasProps> = ({
     brushSize,
     isDrawRect,
 }) => {
-    const rectangles = useRef<{ start: Point; end: Point }[] | []>([]);
+    const rectangles = useRef<
+        | {
+              drawPoints: { start: Point; end: Point };
+              brushConfig: {
+                  color: string;
+                  size: number;
+              };
+          }[]
+        | []
+    >([]);
 
     const onDraw: OnDrawType = (
         ctx,
@@ -57,12 +66,19 @@ const Canvas: FC<CanvasProps> = ({
 
         if (
             start &&
-            lastRectangle?.start.x === start.x &&
-            lastRectangle?.start.y === start.y
+            lastRectangle?.drawPoints.start.x === start.x &&
+            lastRectangle?.drawPoints.start.y === start.y
         )
             // has an edge case with a very very low probability, if another rectangle gets started from the exact same position
             allRectangles.pop();
-        if (start) allRectangles.push({ start, end });
+        if (start)
+            allRectangles.push({
+                drawPoints: { start, end },
+                brushConfig: {
+                    color,
+                    size: width,
+                },
+            });
         rectangles.current = allRectangles;
 
         drawAllRectangles(ctx, color, width, allRectangles);
@@ -83,7 +99,13 @@ const Canvas: FC<CanvasProps> = ({
             );
 
             allRectangles.forEach((rect) => {
-                drawRectangle(rect.start, rect.end, ctx, color, width);
+                drawRectangle(
+                    rect.drawPoints.start,
+                    rect.drawPoints.end,
+                    ctx,
+                    rect.brushConfig.color,
+                    rect.brushConfig.size
+                );
             });
         }
     };

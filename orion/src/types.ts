@@ -26,7 +26,15 @@ type DrawRectangleType = (
     ctx: CanvasRenderingContext2D | null | undefined,
     color: string,
     width: number,
-    allRectangles: { start: Point; end: Point }[] | []
+    allRectangles:
+        | {
+              drawPoints: { start: Point; end: Point };
+              brushConfig: {
+                  color: string;
+                  size: number;
+              };
+          }[]
+        | []
 ) => void;
 interface CanvasProps {
     width: number;
