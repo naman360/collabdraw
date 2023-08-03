@@ -71,6 +71,10 @@ const useOnDraw = (
         object: {
             type: string;
             data: { point: Point; prevPoint: Point; endPoints: Point };
+            brushConfig: {
+                color: string;
+                size: number;
+            };
         }
     ) {
         switch (object.type) {
@@ -79,8 +83,8 @@ const useOnDraw = (
                     ctx,
                     object.data.point,
                     object.data.prevPoint,
-                    brushColorRef.current,
-                    brushSizeRef.current,
+                    object.brushConfig.color,
+                    object.brushConfig.size,
                     "free"
                 );
                 break;
@@ -89,8 +93,8 @@ const useOnDraw = (
                     ctx,
                     object.data.point,
                     object.data.endPoints,
-                    brushColorRef.current,
-                    brushSizeRef.current,
+                    object.brushConfig.color,
+                    object.brushConfig.size,
                     "rect"
                 );
                 break;
@@ -114,13 +118,20 @@ const useOnDraw = (
     function sendDataToConnections(
         type: string,
         point: Point | null,
-        endPoints: Point | null
+        endPoints: Point | null,
+        color: string,
+        size: number
     ) {
+        console.log({ point, endPoints });
         if (!timeoutRef.current) clearTimeout(timeoutRef.current!);
         timeoutRef.current = setTimeout(() => {
             socketRef?.emit("canvas-data", {
                 type,
                 data: { point, prevPoint: prevPointRef.current, endPoints },
+                brushConfig: {
+                    color,
+                    size,
+                },
             });
         }, 20);
     }
@@ -139,7 +150,13 @@ const useOnDraw = (
                         brushSizeRef.current,
                         "free"
                     );
-                    sendDataToConnections("free", point, null);
+                    sendDataToConnections(
+                        "free",
+                        point,
+                        null,
+                        brushColorRef.current,
+                        brushSizeRef.current
+                    );
                 }
                 prevPointRef.current = point;
             } else if (isDrawRectRef.current) {
@@ -154,7 +171,13 @@ const useOnDraw = (
                         brushSizeRef.current,
                         "rect"
                     );
-                    sendDataToConnections("rect", point, endPoints);
+                    sendDataToConnections(
+                        "rect",
+                        point,
+                        endPoints,
+                        brushColorRef.current,
+                        brushSizeRef.current
+                    );
                 }
             }
         };
