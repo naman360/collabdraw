@@ -15,11 +15,13 @@ const useOnDraw = (
     socketRef: Socket | null,
     brushSize: number,
     brushColor: string,
-    isDrawRect: boolean
+    isDrawRect: boolean,
+    isDrawOval: boolean
 ): [RefObject<HTMLCanvasElement>, RefCallback<HTMLCanvasElement>] => {
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
     const isDrawingRef = useRef<boolean>(false);
     const isDrawRectRef = useRef<boolean>(false);
+    const isDrawOvalRef = useRef<boolean>(false);
     const mouseMoveListenerRef = useRef<MouseEventListeners | null>(null);
     const mouseUpListenerRef = useRef<MouseEventListeners | null>(null);
     const mouseDownListenerRef = useRef<MouseEventListeners | null>(null);
@@ -96,6 +98,16 @@ const useOnDraw = (
                     object.brushConfig.color,
                     object.brushConfig.size,
                     "rect"
+                );
+                break;
+            case "oval":
+                onDraw(
+                    ctx,
+                    object.data.point,
+                    object.data.endPoints,
+                    object.brushConfig.color,
+                    object.brushConfig.size,
+                    "oval"
                 );
                 break;
         }
@@ -179,6 +191,26 @@ const useOnDraw = (
                         brushSizeRef.current
                     );
                 }
+            } else if (isDrawOvalRef.current) {
+                const point = mouseStartPoints.current;
+                const endPoints = computePointsToDraw(e.clientX, e.clientY);
+                if (onDraw) {
+                    onDraw(
+                        ctx,
+                        point,
+                        endPoints,
+                        brushColorRef.current,
+                        brushSizeRef.current,
+                        "oval"
+                    );
+                    sendDataToConnections(
+                        "oval",
+                        point,
+                        endPoints,
+                        brushColorRef.current,
+                        brushSizeRef.current
+                    );
+                }
             }
         };
         mouseMoveListenerRef.current = mouseMoveListener;
@@ -189,6 +221,7 @@ const useOnDraw = (
         const mouseUpListener = () => {
             isDrawingRef.current = false;
             isDrawRectRef.current = false;
+            isDrawOvalRef.current = false;
 
             prevPointRef.current = null;
         };
@@ -205,7 +238,12 @@ const useOnDraw = (
 
             if (isDrawRect) {
                 isDrawingRef.current = false;
+                isDrawOvalRef.current = false;
                 isDrawRectRef.current = true;
+            } else if (isDrawOval) {
+                isDrawingRef.current = false;
+                isDrawOvalRef.current = true;
+                isDrawRectRef.current = false;
             } else {
                 isDrawingRef.current = true;
             }

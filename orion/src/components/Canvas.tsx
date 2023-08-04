@@ -16,8 +16,20 @@ const Canvas: FC<CanvasProps> = ({
     brushColor,
     brushSize,
     isDrawRect,
+    isDrawOval,
 }) => {
     const rectangles = useRef<
+        | {
+              drawPoints: { start: Point; end: Point };
+              brushConfig: {
+                  color: string;
+                  size: number;
+              };
+          }[]
+        | []
+    >([]);
+
+    const ovals = useRef<
         | {
               drawPoints: { start: Point; end: Point };
               brushConfig: {
@@ -43,6 +55,9 @@ const Canvas: FC<CanvasProps> = ({
             case "rect":
                 handleRectangle(point, endPoints!, ctx, brushColor, brushSize);
                 break;
+            case "oval":
+                handleOval(point, endPoints!, ctx, brushColor, brushSize);
+                break;
         }
     };
 
@@ -57,6 +72,31 @@ const Canvas: FC<CanvasProps> = ({
         }
     };
 
+    const drawOval: DrawType = (start, end, ctx, color, width) => {
+        if (!ctx) return;
+        if (!start) return;
+
+        ctx.beginPath();
+        ctx.moveTo(start.x, start.y + (end.y - start.y) / 2);
+        ctx.bezierCurveTo(
+            start.x,
+            start.y,
+            end.x,
+            start.y,
+            end.x,
+            start.y + (end.y - start.y) / 2
+        );
+        ctx.bezierCurveTo(
+            end.x,
+            end.y,
+            start.x,
+            end.y,
+            start.x,
+            start.y + (end.y - start.y) / 2
+        );
+        ctx.closePath();
+        ctx.stroke();
+    };
     const handleRectangle: DrawType = (start, end, ctx, color, width) => {
         const allRectangles = [...rectangles.current];
         const lastRectangle =
@@ -84,12 +124,52 @@ const Canvas: FC<CanvasProps> = ({
         drawAllRectangles(ctx, color, width, allRectangles);
     };
 
-    const drawAllRectangles: DrawRectangleType = (
-        ctx,
-        color,
-        width,
-        allRectangles
-    ) => {
+    const handleOval: DrawType = (start, end, ctx, color, width) => {
+        const allOvals = [...ovals.current];
+        const lastOval =
+            allOvals.length > 0 ? allOvals[allOvals.length - 1] : null;
+
+        if (
+            start &&
+            lastOval?.drawPoints.start.x === start.x &&
+            lastOval?.drawPoints.start.y === start.y
+        )
+            // has an edge case with a very very low probability, if another rectangle gets started from the exact same position
+            allOvals.pop();
+        if (start)
+            allOvals.push({
+                drawPoints: { start, end },
+                brushConfig: {
+                    color,
+                    size: width,
+                },
+            });
+        ovals.current = allOvals;
+        drawAllOvals(ctx, color, width, allOvals);
+    };
+
+    const drawAllOvals = (ctx, allOvals) => {
+        if (ctx) {
+            ctx.clearRect(
+                0,
+                0,
+                canvasRef.current?.width!,
+                canvasRef.current?.height!
+            );
+
+            allOvals.forEach((oval) => {
+                drawOval(
+                    oval.drawPoints.start,
+                    oval.drawPoints.end,
+                    ctx,
+                    oval.brushConfig.color,
+                    oval.brushConfig.size
+                );
+            });
+        }
+    };
+
+    const drawAllRectangles = (ctx, allRectangles) => {
         if (ctx) {
             ctx.clearRect(
                 0,
@@ -133,7 +213,8 @@ const Canvas: FC<CanvasProps> = ({
         socketRef,
         brushSize,
         brushColor,
-        isDrawRect
+        isDrawRect,
+        isDrawOval
     );
 
     return (

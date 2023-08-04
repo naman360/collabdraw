@@ -8,6 +8,7 @@ const Home: FC = () => {
     const [brushColor, setBrushColor] = useState<string>("#000");
     const [brushSize, setBrushSize] = useState<number>(5);
     const [drawRect, setDrawRect] = useState<boolean>(false);
+    const [drawOval, setDrawOval] = useState<boolean>(false);
     useEffect(() => {
         if (!socketState?.connected)
             setSocketState(io("http://localhost:5002"));
@@ -30,6 +31,15 @@ const Home: FC = () => {
                     Rectangle
                 </button>
 
+                <button
+                    className={`${
+                        drawOval && "border-2 border-black"
+                    } bg-white mt-3 p-2`}
+                    onClick={() => setDrawOval(!drawOval)}
+                >
+                    Oval
+                </button>
+
                 <select
                     className="mt-3 cursor-pointer"
                     onChange={(e) => setBrushSize(parseInt(e.target.value))}
@@ -44,6 +54,7 @@ const Home: FC = () => {
             <div className="w-full flex items-center justify-center">
                 <Canvas
                     isDrawRect={drawRect}
+                    isDrawOval={drawOval}
                     brushColor={brushColor}
                     brushSize={brushSize}
                     socketRef={socketState}
