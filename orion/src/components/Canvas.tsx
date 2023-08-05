@@ -76,7 +76,8 @@ const Canvas: FC<CanvasProps> = ({
     const drawOval: DrawType = (start, end, ctx, color, width) => {
         if (!ctx) return;
         if (!start) return;
-
+        ctx.lineWidth = width;
+        ctx.strokeStyle = color;
         ctx.beginPath();
         ctx.moveTo(start.x, start.y + (end.y - start.y) / 2);
         ctx.bezierCurveTo(
