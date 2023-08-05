@@ -36,6 +36,24 @@ type DrawRectangleType = (
           }[]
         | []
 ) => void;
+interface BrushConfig {
+    color: string;
+    size: number;
+}
+interface DrawPoints {
+    start: Point;
+    end: Point;
+}
+
+interface ShapeData {
+    drawPoints: DrawPoints;
+    brushConfig: BrushConfig;
+}
+type DrawFunction = (
+    ctx: CanvasRenderingContext2D | null | undefined,
+    shapeData: ShapeData[]
+) => void;
+
 interface CanvasProps {
     width: number;
     height: number;
@@ -43,6 +61,7 @@ interface CanvasProps {
     brushColor: string;
     brushSize: number;
     isDrawRect: boolean;
+    isDrawOval: boolean;
 }
 
 export type {
@@ -53,5 +72,6 @@ export type {
     MouseEventListeners,
     DrawType,
     DrawRectangleType,
+    DrawFunction,
     Point,
 };

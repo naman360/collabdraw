@@ -2,6 +2,7 @@
 import useOnDraw from "@/hooks/useOnDraw";
 import {
     CanvasProps,
+    DrawFunction,
     DrawRectangleType,
     DrawType,
     OnDrawType,
@@ -121,7 +122,7 @@ const Canvas: FC<CanvasProps> = ({
             });
         rectangles.current = allRectangles;
 
-        drawAllRectangles(ctx, color, width, allRectangles);
+        drawAllRectangles(ctx, allRectangles);
     };
 
     const handleOval: DrawType = (start, end, ctx, color, width) => {
@@ -145,10 +146,10 @@ const Canvas: FC<CanvasProps> = ({
                 },
             });
         ovals.current = allOvals;
-        drawAllOvals(ctx, color, width, allOvals);
+        drawAllOvals(ctx, allOvals);
     };
 
-    const drawAllOvals = (ctx, allOvals) => {
+    const drawAllOvals: DrawFunction = (ctx, allOvals) => {
         if (ctx) {
             ctx.clearRect(
                 0,
@@ -169,7 +170,7 @@ const Canvas: FC<CanvasProps> = ({
         }
     };
 
-    const drawAllRectangles = (ctx, allRectangles) => {
+    const drawAllRectangles: DrawFunction = (ctx, allRectangles) => {
         if (ctx) {
             ctx.clearRect(
                 0,
