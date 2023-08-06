@@ -18,6 +18,7 @@ const Canvas: FC<CanvasProps> = ({
     brushSize,
     isDrawRect,
     isDrawOval,
+    isEraser,
 }) => {
     const rectangles = useRef<
         | {
@@ -29,6 +30,7 @@ const Canvas: FC<CanvasProps> = ({
           }[]
         | []
     >([]);
+    const timeoutRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
     const ovals = useRef<
         | {
@@ -58,10 +60,15 @@ const Canvas: FC<CanvasProps> = ({
                 break;
             case "oval":
                 handleOval(point, endPoints!, ctx, brushColor, brushSize);
+            case "erase":
+                eraseCanvas(point, endPoints!, ctx, "#fff", brushSize);
                 break;
         }
     };
-
+    const eraseCanvas: DrawType = (start, end, ctx, color, brushSize) => {
+        if (!ctx || !start) return;
+        drawLine(start, end, ctx, color, brushSize);
+    };
     const drawRectangle: DrawType = (start, end, ctx, color, width) => {
         if (ctx && start) {
             ctx.lineWidth = width;
@@ -193,14 +200,15 @@ const Canvas: FC<CanvasProps> = ({
     };
 
     const drawLine: DrawType = (start, end, ctx, color, width) => {
-        if (ctx) {
+        if (ctx && end) {
+            console.log("drawline", start, end, ctx, color, width);
             start = start ?? end;
 
             ctx.beginPath();
             ctx.lineWidth = width;
             ctx.strokeStyle = color;
-            ctx.moveTo(start.x, start.y);
-            ctx.lineTo(end?.x, end?.y);
+            ctx.moveTo(end.x, end.y);
+            ctx.lineTo(start?.x, start?.y);
             ctx.stroke();
 
             ctx.fillStyle = color;
@@ -216,7 +224,8 @@ const Canvas: FC<CanvasProps> = ({
         brushSize,
         brushColor,
         isDrawRect,
-        isDrawOval
+        isDrawOval,
+        isEraser
     );
 
     return (

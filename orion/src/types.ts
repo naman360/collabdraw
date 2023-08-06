@@ -62,6 +62,7 @@ interface CanvasProps {
     brushSize: number;
     isDrawRect: boolean;
     isDrawOval: boolean;
+    isEraser: boolean;
 }
 
 export type {

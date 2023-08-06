@@ -9,6 +9,7 @@ const Home: FC = () => {
     const [brushSize, setBrushSize] = useState<number>(5);
     const [drawRect, setDrawRect] = useState<boolean>(false);
     const [drawOval, setDrawOval] = useState<boolean>(false);
+    const [isEraser, setIsEraser] = useState<boolean>(false);
     useEffect(() => {
         if (!socketState?.connected)
             setSocketState(io("http://localhost:5002"));
@@ -39,6 +40,14 @@ const Home: FC = () => {
                 >
                     Oval
                 </button>
+                <button
+                    className={`${
+                        isEraser && "border-2 border-black"
+                    } bg-white mt-3 p-2`}
+                    onClick={() => setIsEraser(!isEraser)}
+                >
+                    Eraser
+                </button>
 
                 <select
                     className="mt-3 cursor-pointer"
@@ -55,6 +64,7 @@ const Home: FC = () => {
                 <Canvas
                     isDrawRect={drawRect}
                     isDrawOval={drawOval}
+                    isEraser={isEraser}
                     brushColor={brushColor}
                     brushSize={brushSize}
                     socketRef={socketState}
