@@ -15,6 +15,26 @@ const Home: FC = () => {
             setSocketState(io("http://localhost:5002"));
     }, []);
 
+    const handleTool = (type: string) => {
+        switch (type) {
+            case "rect":
+                setDrawRect(!drawRect);
+                setDrawOval(false);
+                setIsEraser(false);
+                break;
+            case "oval":
+                setDrawOval(!drawOval);
+                setIsEraser(false);
+                setDrawRect(false);
+                break;
+
+            case "erase":
+                setIsEraser(!isEraser);
+                setDrawRect(false);
+                setDrawOval(false);
+                break;
+        }
+    };
     return (
         <div className="h-screen p-2 w-full flex flex-column items-center">
             <div className="p-2 flex flex-col items-center justify-center bg-slate-200 border border-black rounded-lg h-3/4">
@@ -27,7 +47,7 @@ const Home: FC = () => {
                     className={`${
                         drawRect && "border-2 border-black"
                     } bg-white mt-3 p-2`}
-                    onClick={() => setDrawRect(!drawRect)}
+                    onClick={() => handleTool("rect")}
                 >
                     Rectangle
                 </button>
@@ -36,7 +56,7 @@ const Home: FC = () => {
                     className={`${
                         drawOval && "border-2 border-black"
                     } bg-white mt-3 p-2`}
-                    onClick={() => setDrawOval(!drawOval)}
+                    onClick={() => handleTool("oval")}
                 >
                     Oval
                 </button>
@@ -44,7 +64,7 @@ const Home: FC = () => {
                     className={`${
                         isEraser && "border-2 border-black"
                     } bg-white mt-3 p-2`}
-                    onClick={() => setIsEraser(!isEraser)}
+                    onClick={() => handleTool("erase")}
                 >
                     Eraser
                 </button>
@@ -65,6 +85,9 @@ const Home: FC = () => {
                     isDrawRect={drawRect}
                     isDrawOval={drawOval}
                     isEraser={isEraser}
+                    // setIsEraser={setIsEraser}
+                    // setDrawOval={setDrawOval}
+                    // setDrawRect={setDrawRect}
                     brushColor={brushColor}
                     brushSize={brushSize}
                     socketRef={socketState}

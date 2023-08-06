@@ -30,7 +30,6 @@ const Canvas: FC<CanvasProps> = ({
           }[]
         | []
     >([]);
-    const timeoutRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
     const ovals = useRef<
         | {
@@ -60,6 +59,7 @@ const Canvas: FC<CanvasProps> = ({
                 break;
             case "oval":
                 handleOval(point, endPoints!, ctx, brushColor, brushSize);
+                break;
             case "erase":
                 eraseCanvas(point, endPoints!, ctx, "#fff", brushSize);
                 break;
