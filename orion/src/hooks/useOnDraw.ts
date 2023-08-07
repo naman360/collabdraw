@@ -152,7 +152,6 @@ const useOnDraw = (
         color: string,
         size: number
     ) {
-        console.log({ point, endPoints });
         if (!timeoutRef.current) clearTimeout(timeoutRef.current!);
         timeoutRef.current = setTimeout(() => {
             socketRef?.emit("canvas-data", {

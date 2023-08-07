@@ -269,7 +269,6 @@ const Canvas: FC<CanvasProps> = ({
 
     const drawFree: DrawType = (start, end, ctx, color, width) => {
         if (ctx && end) {
-            console.log("drawline", start, end, ctx, color, width);
             start = start ?? end;
 
             ctx.beginPath();
