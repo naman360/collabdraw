@@ -3,7 +3,6 @@ import useOnDraw from "@/hooks/useOnDraw";
 import {
     CanvasProps,
     DrawFunction,
-    DrawRectangleType,
     DrawType,
     OnDrawType,
     Point,
@@ -18,6 +17,7 @@ const Canvas: FC<CanvasProps> = ({
     brushSize,
     isDrawRect,
     isDrawOval,
+    isDrawLine,
     isEraser,
 }) => {
     const rectangles = useRef<
@@ -41,6 +41,16 @@ const Canvas: FC<CanvasProps> = ({
           }[]
         | []
     >([]);
+    const lines = useRef<
+        | {
+              drawPoints: { start: Point; end: Point };
+              brushConfig: {
+                  color: string;
+                  size: number;
+              };
+          }[]
+        | []
+    >([]);
 
     const onDraw: OnDrawType = (
         ctx,
@@ -52,10 +62,13 @@ const Canvas: FC<CanvasProps> = ({
     ) => {
         switch (type) {
             case "free":
-                drawLine(point, endPoints!, ctx, brushColor, brushSize);
+                drawFree(point, endPoints!, ctx, brushColor, brushSize);
                 break;
             case "rect":
                 handleRectangle(point, endPoints!, ctx, brushColor, brushSize);
+                break;
+            case "line":
+                handleLine(point, endPoints!, ctx, brushColor, brushSize);
                 break;
             case "oval":
                 handleOval(point, endPoints!, ctx, brushColor, brushSize);
@@ -67,7 +80,7 @@ const Canvas: FC<CanvasProps> = ({
     };
     const eraseCanvas: DrawType = (start, end, ctx, color, brushSize) => {
         if (!ctx || !start) return;
-        drawLine(start, end, ctx, color, brushSize);
+        drawFree(start, end, ctx, color, brushSize);
     };
     const drawRectangle: DrawType = (start, end, ctx, color, width) => {
         if (ctx && start) {
@@ -156,6 +169,29 @@ const Canvas: FC<CanvasProps> = ({
         ovals.current = allOvals;
         drawAllOvals(ctx, allOvals);
     };
+    const handleLine: DrawType = (start, end, ctx, color, width) => {
+        const allLines = [...lines.current];
+        const lastOval =
+            allLines.length > 0 ? allLines[allLines.length - 1] : null;
+
+        if (
+            start &&
+            lastOval?.drawPoints.start.x === start.x &&
+            lastOval?.drawPoints.start.y === start.y
+        )
+            // has an edge case with a very very low probability, if another rectangle gets started from the exact same position
+            allLines.pop();
+        if (start)
+            allLines.push({
+                drawPoints: { start, end },
+                brushConfig: {
+                    color,
+                    size: width,
+                },
+            });
+        lines.current = allLines;
+        drawAllLines(ctx, allLines);
+    };
 
     const drawAllOvals: DrawFunction = (ctx, allOvals) => {
         if (ctx) {
@@ -198,8 +234,40 @@ const Canvas: FC<CanvasProps> = ({
             });
         }
     };
+    const drawAllLines: DrawFunction = (ctx, allLines) => {
+        if (ctx) {
+            ctx.clearRect(
+                0,
+                0,
+                canvasRef.current?.width!,
+                canvasRef.current?.height!
+            );
 
+            allLines.forEach((line) => {
+                drawLine(
+                    line.drawPoints.start,
+                    line.drawPoints.end,
+                    ctx,
+                    line.brushConfig.color,
+                    line.brushConfig.size
+                );
+            });
+        }
+    };
     const drawLine: DrawType = (start, end, ctx, color, width) => {
+        if (ctx && end) {
+            start = start ?? end;
+
+            ctx.beginPath();
+            ctx.lineWidth = width;
+            ctx.strokeStyle = color;
+            ctx.moveTo(end.x, end.y);
+            ctx.lineTo(start?.x, start?.y);
+            ctx.stroke();
+        }
+    };
+
+    const drawFree: DrawType = (start, end, ctx, color, width) => {
         if (ctx && end) {
             console.log("drawline", start, end, ctx, color, width);
             start = start ?? end;
@@ -225,6 +293,7 @@ const Canvas: FC<CanvasProps> = ({
         brushColor,
         isDrawRect,
         isDrawOval,
+        isDrawLine,
         isEraser
     );
 

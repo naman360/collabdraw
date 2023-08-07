@@ -9,6 +9,7 @@ const Home: FC = () => {
     const [brushSize, setBrushSize] = useState<number>(5);
     const [drawRect, setDrawRect] = useState<boolean>(false);
     const [drawOval, setDrawOval] = useState<boolean>(false);
+    const [drawLine, setDrawLine] = useState<boolean>(false);
     const [isEraser, setIsEraser] = useState<boolean>(false);
     useEffect(() => {
         if (!socketState?.connected)
@@ -27,7 +28,12 @@ const Home: FC = () => {
                 setIsEraser(false);
                 setDrawRect(false);
                 break;
-
+            case "line":
+                setDrawLine(!drawLine);
+                setIsEraser(false);
+                setDrawRect(false);
+                setDrawOval(false);
+                break;
             case "erase":
                 setIsEraser(!isEraser);
                 setDrawRect(false);
@@ -62,6 +68,14 @@ const Home: FC = () => {
                 </button>
                 <button
                     className={`${
+                        drawLine && "border-2 border-black"
+                    } bg-white mt-3 p-2`}
+                    onClick={() => handleTool("line")}
+                >
+                    Line
+                </button>
+                <button
+                    className={`${
                         isEraser && "border-2 border-black"
                     } bg-white mt-3 p-2`}
                     onClick={() => handleTool("erase")}
@@ -85,9 +99,7 @@ const Home: FC = () => {
                     isDrawRect={drawRect}
                     isDrawOval={drawOval}
                     isEraser={isEraser}
-                    // setIsEraser={setIsEraser}
-                    // setDrawOval={setDrawOval}
-                    // setDrawRect={setDrawRect}
+                    isDrawLine={drawLine}
                     brushColor={brushColor}
                     brushSize={brushSize}
                     socketRef={socketState}
