@@ -41,17 +41,17 @@ interface BrushConfig {
     size: number;
 }
 interface DrawPoints {
-    start: Point;
+    start: Point | null;
     end: Point;
 }
 
-interface ShapeData {
+export interface ShapeData {
     drawPoints: DrawPoints;
     brushConfig: BrushConfig;
 }
 type DrawFunction = (
     ctx: CanvasRenderingContext2D | null | undefined,
-    shapeData: ShapeData[]
+    shapeData: ShapeData[] | []
 ) => void;
 
 interface CanvasProps {
@@ -66,6 +66,7 @@ interface CanvasProps {
     isEraser: boolean;
 }
 
+// Types Exports
 export type {
     CanvasRefToVoid,
     ReturnVoid,

@@ -38,6 +38,8 @@ const Home: FC = () => {
                 setIsEraser(!isEraser);
                 setDrawRect(false);
                 setDrawOval(false);
+                setDrawLine(false);
+
                 break;
         }
     };

@@ -6,6 +6,7 @@ import {
     DrawType,
     OnDrawType,
     Point,
+    ShapeData,
 } from "@/types";
 import { FC, useRef } from "react";
 
@@ -20,37 +21,10 @@ const Canvas: FC<CanvasProps> = ({
     isDrawLine,
     isEraser,
 }) => {
-    const rectangles = useRef<
-        | {
-              drawPoints: { start: Point; end: Point };
-              brushConfig: {
-                  color: string;
-                  size: number;
-              };
-          }[]
-        | []
-    >([]);
-
-    const ovals = useRef<
-        | {
-              drawPoints: { start: Point; end: Point };
-              brushConfig: {
-                  color: string;
-                  size: number;
-              };
-          }[]
-        | []
-    >([]);
-    const lines = useRef<
-        | {
-              drawPoints: { start: Point; end: Point };
-              brushConfig: {
-                  color: string;
-                  size: number;
-              };
-          }[]
-        | []
-    >([]);
+    const freeHand = useRef<ShapeData[] | []>([]);
+    const rectangles = useRef<ShapeData[] | []>([]);
+    const ovals = useRef<ShapeData[] | []>([]);
+    const lines = useRef<ShapeData[] | []>([]);
 
     const onDraw: OnDrawType = (
         ctx,
@@ -62,7 +36,7 @@ const Canvas: FC<CanvasProps> = ({
     ) => {
         switch (type) {
             case "free":
-                drawFree(point, endPoints!, ctx, brushColor, brushSize);
+                handleFreeHand(point, endPoints!, ctx, brushColor, brushSize);
                 break;
             case "rect":
                 handleRectangle(point, endPoints!, ctx, brushColor, brushSize);
@@ -78,6 +52,23 @@ const Canvas: FC<CanvasProps> = ({
                 break;
         }
     };
+
+    const drawAllShapes = (
+        ctx: CanvasRenderingContext2D | null | undefined
+    ) => {
+        if (!ctx) return;
+        ctx.clearRect(
+            0,
+            0,
+            canvasRef.current?.width!,
+            canvasRef.current?.height!
+        );
+        drawAllOvals(ctx, ovals.current);
+        drawAllRectangles(ctx, rectangles.current);
+        drawAllLines(ctx, lines.current);
+        drawAllFreeHands(ctx, freeHand.current);
+    };
+
     const eraseCanvas: DrawType = (start, end, ctx, color, brushSize) => {
         if (!ctx || !start) return;
         drawFree(start, end, ctx, color, brushSize);
@@ -128,8 +119,8 @@ const Canvas: FC<CanvasProps> = ({
 
         if (
             start &&
-            lastRectangle?.drawPoints.start.x === start.x &&
-            lastRectangle?.drawPoints.start.y === start.y
+            lastRectangle?.drawPoints.start?.x === start.x &&
+            lastRectangle?.drawPoints.start?.y === start.y
         )
             // has an edge case with a very very low probability, if another rectangle gets started from the exact same position
             allRectangles.pop();
@@ -143,7 +134,7 @@ const Canvas: FC<CanvasProps> = ({
             });
         rectangles.current = allRectangles;
 
-        drawAllRectangles(ctx, allRectangles);
+        drawAllShapes(ctx);
     };
 
     const handleOval: DrawType = (start, end, ctx, color, width) => {
@@ -153,8 +144,8 @@ const Canvas: FC<CanvasProps> = ({
 
         if (
             start &&
-            lastOval?.drawPoints.start.x === start.x &&
-            lastOval?.drawPoints.start.y === start.y
+            lastOval?.drawPoints.start?.x === start.x &&
+            lastOval?.drawPoints.start?.y === start.y
         )
             // has an edge case with a very very low probability, if another rectangle gets started from the exact same position
             allOvals.pop();
@@ -167,7 +158,7 @@ const Canvas: FC<CanvasProps> = ({
                 },
             });
         ovals.current = allOvals;
-        drawAllOvals(ctx, allOvals);
+        drawAllShapes(ctx);
     };
     const handleLine: DrawType = (start, end, ctx, color, width) => {
         const allLines = [...lines.current];
@@ -176,8 +167,8 @@ const Canvas: FC<CanvasProps> = ({
 
         if (
             start &&
-            lastOval?.drawPoints.start.x === start.x &&
-            lastOval?.drawPoints.start.y === start.y
+            lastOval?.drawPoints.start?.x === start.x &&
+            lastOval?.drawPoints.start?.y === start.y
         )
             // has an edge case with a very very low probability, if another rectangle gets started from the exact same position
             allLines.pop();
@@ -190,18 +181,24 @@ const Canvas: FC<CanvasProps> = ({
                 },
             });
         lines.current = allLines;
-        drawAllLines(ctx, allLines);
+        drawAllShapes(ctx);
+    };
+
+    const handleFreeHand: DrawType = (start, end, ctx, color, width) => {
+        const freeHandData = [...freeHand.current];
+        freeHandData.push({
+            drawPoints: { start, end },
+            brushConfig: {
+                color,
+                size: width,
+            },
+        });
+        freeHand.current = freeHandData;
+        drawAllShapes(ctx);
     };
 
     const drawAllOvals: DrawFunction = (ctx, allOvals) => {
         if (ctx) {
-            ctx.clearRect(
-                0,
-                0,
-                canvasRef.current?.width!,
-                canvasRef.current?.height!
-            );
-
             allOvals.forEach((oval) => {
                 drawOval(
                     oval.drawPoints.start,
@@ -211,18 +208,12 @@ const Canvas: FC<CanvasProps> = ({
                     oval.brushConfig.size
                 );
             });
+            console.log(allOvals, rectangles.current);
         }
     };
 
     const drawAllRectangles: DrawFunction = (ctx, allRectangles) => {
         if (ctx) {
-            ctx.clearRect(
-                0,
-                0,
-                canvasRef.current?.width!,
-                canvasRef.current?.height!
-            );
-
             allRectangles.forEach((rect) => {
                 drawRectangle(
                     rect.drawPoints.start,
@@ -234,15 +225,23 @@ const Canvas: FC<CanvasProps> = ({
             });
         }
     };
+
+    const drawAllFreeHands: DrawFunction = (ctx, allFreeHand) => {
+        if (ctx) {
+            allFreeHand.forEach((freeHand) => {
+                drawFree(
+                    freeHand.drawPoints.start,
+                    freeHand.drawPoints.end,
+                    ctx,
+                    freeHand.brushConfig.color,
+                    freeHand.brushConfig.size
+                );
+            });
+        }
+    };
+
     const drawAllLines: DrawFunction = (ctx, allLines) => {
         if (ctx) {
-            ctx.clearRect(
-                0,
-                0,
-                canvasRef.current?.width!,
-                canvasRef.current?.height!
-            );
-
             allLines.forEach((line) => {
                 drawLine(
                     line.drawPoints.start,
