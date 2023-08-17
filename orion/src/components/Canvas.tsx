@@ -63,6 +63,8 @@ const Canvas: FC<CanvasProps> = ({
             canvasRef.current?.width!,
             canvasRef.current?.height!
         );
+        console.log(freeHand.current, ovals.current, rectangles.current);
+
         drawAllOvals(ctx, ovals.current);
         drawAllRectangles(ctx, rectangles.current);
         drawAllLines(ctx, lines.current);
@@ -208,7 +210,6 @@ const Canvas: FC<CanvasProps> = ({
                     oval.brushConfig.size
                 );
             });
-            console.log(allOvals, rectangles.current);
         }
     };
 
@@ -295,6 +296,11 @@ const Canvas: FC<CanvasProps> = ({
         isEraser
     );
 
+    /**
+     * 2 Canvases to be used ref(https://stackoverflow.com/questions/65425752/how-can-i-save-multiple-basic-shapes-drawn-on-the-same-canvas-with-preview-like)
+     * 1. One for showing real time draw.
+     * 2. Another for storing drawn shape
+     */
     return (
         <canvas
             className="border-2 border-stone-950"
