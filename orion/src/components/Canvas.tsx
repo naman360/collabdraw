@@ -36,16 +36,16 @@ const Canvas: FC<CanvasProps> = ({
     ) => {
         switch (type) {
             case "free":
-                handleFreeHand(point, endPoints!, ctx, brushColor, brushSize);
+                drawFree(point, endPoints!, ctx, brushColor, brushSize);
                 break;
             case "rect":
-                handleRectangle(point, endPoints!, ctx, brushColor, brushSize);
+                drawRectangle(point, endPoints!, ctx, brushColor, brushSize);
                 break;
             case "line":
-                handleLine(point, endPoints!, ctx, brushColor, brushSize);
+                drawLine(point, endPoints!, ctx, brushColor, brushSize);
                 break;
             case "oval":
-                handleOval(point, endPoints!, ctx, brushColor, brushSize);
+                drawOval(point, endPoints!, ctx, brushColor, brushSize);
                 break;
             case "erase":
                 eraseCanvas(point, endPoints!, ctx, "#fff", brushSize);
@@ -77,6 +77,12 @@ const Canvas: FC<CanvasProps> = ({
     };
     const drawRectangle: DrawType = (start, end, ctx, color, width) => {
         if (ctx && start) {
+            ctx.clearRect(
+                0,
+                0,
+                canvasRef.current?.width!,
+                canvasRef.current?.height!
+            );
             ctx.lineWidth = width;
             ctx.strokeStyle = color;
             const rectWidth = end.x - start.x;
@@ -89,6 +95,12 @@ const Canvas: FC<CanvasProps> = ({
     const drawOval: DrawType = (start, end, ctx, color, width) => {
         if (!ctx) return;
         if (!start) return;
+        ctx.clearRect(
+            0,
+            0,
+            canvasRef.current?.width!,
+            canvasRef.current?.height!
+        );
         ctx.lineWidth = width;
         ctx.strokeStyle = color;
         ctx.beginPath();
@@ -256,6 +268,12 @@ const Canvas: FC<CanvasProps> = ({
     };
     const drawLine: DrawType = (start, end, ctx, color, width) => {
         if (ctx && end) {
+            ctx.clearRect(
+                0,
+                0,
+                canvasRef.current?.width!,
+                canvasRef.current?.height!
+            );
             start = start ?? end;
 
             ctx.beginPath();
@@ -285,29 +303,40 @@ const Canvas: FC<CanvasProps> = ({
         }
     };
 
-    const [canvasRef, setCanvasref] = useOnDraw(
-        onDraw,
-        socketRef,
-        brushSize,
-        brushColor,
-        isDrawRect,
-        isDrawOval,
-        isDrawLine,
-        isEraser
-    );
+    const [canvasRef, setCanvasref, primaryCanvasRef, setPrimaryCanvasRef] =
+        useOnDraw(
+            onDraw,
+            socketRef,
+            brushSize,
+            brushColor,
+            isDrawRect,
+            isDrawOval,
+            isDrawLine,
+            isEraser
+        );
 
     /**
      * 2 Canvases to be used ref(https://stackoverflow.com/questions/65425752/how-can-i-save-multiple-basic-shapes-drawn-on-the-same-canvas-with-preview-like)
-     * 1. One for showing real time draw.
-     * 2. Another for storing drawn shape
+     * 1. One for showing real time draw. (Secondary Canvas)
+     * 2. Another for storing drawn shape. (Primary Canvas)
      */
     return (
-        <canvas
-            className="border-2 border-stone-950"
-            width={width}
-            height={height}
-            ref={setCanvasref}
-        />
+        <>
+            {/* Primary Canvas */}
+            <canvas
+                className="border-2 border-stone-950"
+                width={width}
+                height={height}
+                ref={setPrimaryCanvasRef}
+            />
+            {/* Secondary Canvas */}
+            <canvas
+                className="border-2 border-stone-950"
+                width={width}
+                height={height}
+                ref={setCanvasref}
+            />
+        </>
     );
 };
 export default Canvas;

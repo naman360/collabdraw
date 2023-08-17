@@ -13,8 +13,14 @@ const useOnDraw = (
     isDrawOval: boolean,
     isDrawLine: boolean,
     isEraser: boolean
-): [RefObject<HTMLCanvasElement>, RefCallback<HTMLCanvasElement>] => {
+): [
+    RefObject<HTMLCanvasElement>,
+    RefCallback<HTMLCanvasElement>,
+    RefObject<HTMLCanvasElement>,
+    RefCallback<HTMLCanvasElement>
+] => {
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
+    const primaryCanvasRef = useRef<HTMLCanvasElement | null>(null);
     const isDrawingRef = useRef<boolean>(false);
     const isDrawRectRef = useRef<boolean>(false);
     const isDrawOvalRef = useRef<boolean>(false);
@@ -143,6 +149,12 @@ const useOnDraw = (
         initMouseMoveListener();
         initMouseDownListener();
         initMouseUpListener();
+    }
+    function setPrimaryCanvasRef(ref: HTMLCanvasElement) {
+        if (!ref) return;
+        primaryCanvasRef.current = ref;
+        setCanvasStyles();
+        let ctx = primaryCanvasRef.current?.getContext("2d");
     }
 
     function sendDataToConnections(
@@ -281,9 +293,13 @@ const useOnDraw = (
             isDrawOvalRef.current = false;
             isEraserRef.current = false;
             isDrawLineRef.current = false;
+            let mainctx = primaryCanvasRef.current?.getContext("2d");
+
+            mainctx?.drawImage(canvasRef.current!, 0, 0);
 
             prevPointRef.current = null;
         };
+
         mouseUpListenerRef.current = mouseUpListener;
         window.addEventListener("mouseup", mouseUpListener);
     }
@@ -337,6 +353,6 @@ const useOnDraw = (
         }
         return null;
     }
-    return [canvasRef, setCanvasRef];
+    return [canvasRef, setCanvasRef, primaryCanvasRef, setPrimaryCanvasRef];
 };
 export default useOnDraw;
