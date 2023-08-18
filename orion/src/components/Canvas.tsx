@@ -321,7 +321,7 @@ const Canvas: FC<CanvasProps> = ({
      * 2. Another for storing drawn shape. (Primary Canvas)
      */
     return (
-        <>
+        <div className="relative">
             {/* Primary Canvas */}
             <canvas
                 className="border-2 border-stone-950"
@@ -331,12 +331,12 @@ const Canvas: FC<CanvasProps> = ({
             />
             {/* Secondary Canvas */}
             <canvas
-                className="border-2 border-stone-950"
+                className="border-2 border-stone-950 absolute top-0"
                 width={width}
                 height={height}
                 ref={setCanvasref}
             />
-        </>
+        </div>
     );
 };
 export default Canvas;
