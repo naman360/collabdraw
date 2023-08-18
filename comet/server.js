@@ -18,6 +18,9 @@ io.on("connection", (socket) => {
     socket.on("canvas-data", (data) => {
         socket.broadcast.emit("canvas-data", data);
     });
+    socket.on("mouse-up", (data) => {
+        socket.broadcast.emit("mouse-up", data);
+    });
 });
 
 httpServer.listen(port, () => {
