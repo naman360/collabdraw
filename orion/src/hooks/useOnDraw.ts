@@ -135,6 +135,11 @@ const useOnDraw = (
                 );
                 break;
         }
+
+        let mainCtx = primaryCanvasRef.current?.getContext("2d");
+        socketRef?.on("mouse-up", (conn) => {
+            if (conn.mouseUp) mainCtx?.drawImage(canvasRef.current!, 0, 0);
+        });
     }
 
     function setCanvasRef(ref: HTMLCanvasElement) {
@@ -298,6 +303,7 @@ const useOnDraw = (
             mainctx?.drawImage(canvasRef.current!, 0, 0);
 
             prevPointRef.current = null;
+            socketRef?.emit("mouse-up", { mouseUp: true });
         };
 
         mouseUpListenerRef.current = mouseUpListener;
