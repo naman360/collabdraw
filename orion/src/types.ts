@@ -1,3 +1,4 @@
+import { RefObject } from "react";
 import { Socket } from "socket.io-client";
 
 type CanvasRefToVoid = (
@@ -16,6 +17,7 @@ type OnDrawType = (
     type: string
 ) => void;
 type DrawType = (
+    canvasRef: RefObject<HTMLCanvasElement>,
     start: Point | null,
     end: Point,
     ctx: CanvasRenderingContext2D | null | undefined,

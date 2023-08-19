@@ -16,24 +16,29 @@ const useOnDraw = (
 ): [
     RefObject<HTMLCanvasElement>,
     RefCallback<HTMLCanvasElement>,
-    RefObject<HTMLCanvasElement>,
     RefCallback<HTMLCanvasElement>
 ] => {
+    // Canvas refs
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
     const primaryCanvasRef = useRef<HTMLCanvasElement | null>(null);
+
+    // Tools Ref
     const isDrawingRef = useRef<boolean>(false);
     const isDrawRectRef = useRef<boolean>(false);
     const isDrawOvalRef = useRef<boolean>(false);
     const isDrawLineRef = useRef<boolean>(false);
     const isEraserRef = useRef<boolean>(false);
+
+    // Mouse event refs
     const mouseMoveListenerRef = useRef<MouseEventListeners | null>(null);
     const mouseUpListenerRef = useRef<MouseEventListeners | null>(null);
     const mouseDownListenerRef = useRef<MouseEventListeners | null>(null);
+
+    // Misc refs
     const prevPointRef = useRef<Point | null>(null);
     const brushSizeRef = useRef<number>(5);
     const brushColorRef = useRef<string>("#000");
     const timeoutRef = useRef<ReturnType<typeof setInterval> | null>(null);
-
     const mouseStartPoints = useRef<Point | null>({
         x: -1,
         y: -1,
@@ -43,6 +48,7 @@ const useOnDraw = (
         brushColorRef.current = brushColor;
         brushSizeRef.current = brushSize;
     }, [brushColor, brushSize, isDrawRect]);
+
     useEffect(() => {
         return () => {
             if (mouseMoveListenerRef.current) {
@@ -155,11 +161,11 @@ const useOnDraw = (
         initMouseDownListener();
         initMouseUpListener();
     }
+
     function setPrimaryCanvasRef(ref: HTMLCanvasElement) {
         if (!ref) return;
         primaryCanvasRef.current = ref;
         setCanvasStyles();
-        let ctx = primaryCanvasRef.current?.getContext("2d");
     }
 
     function sendDataToConnections(
@@ -182,110 +188,55 @@ const useOnDraw = (
         }, 20);
     }
 
+    function handleDrawing(
+        ctx: CanvasRenderingContext2D | null | undefined,
+        startPoint: Point | null,
+        endPoint: Point | null,
+        drawType: string
+    ) {
+        if (onDraw) {
+            onDraw(
+                ctx,
+                startPoint,
+                endPoint,
+                brushColorRef.current,
+                brushSizeRef.current,
+                drawType
+            );
+            sendDataToConnections(
+                drawType,
+                startPoint,
+                endPoint,
+                brushColorRef.current,
+                brushSizeRef.current
+            );
+        }
+    }
+
     function initMouseMoveListener() {
         const mouseMoveListener = (e: MouseEvent) => {
             const ctx = canvasRef.current?.getContext("2d");
-            if (isDrawingRef.current) {
-                const point = computePointsToDraw(e.clientX, e.clientY);
-                if (onDraw) {
-                    onDraw(
-                        ctx,
-                        point,
-                        prevPointRef.current,
-                        brushColorRef.current,
-                        brushSizeRef.current,
-                        "free"
-                    );
-                    sendDataToConnections(
-                        "free",
-                        point,
-                        null,
-                        brushColorRef.current,
-                        brushSizeRef.current
-                    );
-                }
-                prevPointRef.current = point;
-            } else if (isDrawRectRef.current) {
-                const point = mouseStartPoints.current;
-                const endPoints = computePointsToDraw(e.clientX, e.clientY);
-                if (onDraw) {
-                    onDraw(
-                        ctx,
-                        point,
-                        endPoints,
-                        brushColorRef.current,
-                        brushSizeRef.current,
-                        "rect"
-                    );
-                    sendDataToConnections(
-                        "rect",
-                        point,
-                        endPoints,
-                        brushColorRef.current,
-                        brushSizeRef.current
-                    );
-                }
-            } else if (isDrawOvalRef.current) {
-                const point = mouseStartPoints.current;
-                const endPoints = computePointsToDraw(e.clientX, e.clientY);
-                if (onDraw) {
-                    onDraw(
-                        ctx,
-                        point,
-                        endPoints,
-                        brushColorRef.current,
-                        brushSizeRef.current,
-                        "oval"
-                    );
-                    sendDataToConnections(
-                        "oval",
-                        point,
-                        endPoints,
-                        brushColorRef.current,
-                        brushSizeRef.current
-                    );
-                }
-            } else if (isDrawLineRef.current) {
-                const point = mouseStartPoints.current;
-                const endPoints = computePointsToDraw(e.clientX, e.clientY);
-                if (onDraw) {
-                    onDraw(
-                        ctx,
-                        point,
-                        endPoints,
-                        brushColorRef.current,
-                        brushSizeRef.current,
-                        "line"
-                    );
-                    sendDataToConnections(
-                        "line",
-                        point,
-                        endPoints,
-                        brushColorRef.current,
-                        brushSizeRef.current
-                    );
-                }
-            } else if (isEraserRef.current) {
-                const point = computePointsToDraw(e.clientX, e.clientY);
-                if (onDraw) {
-                    onDraw(
-                        ctx,
-                        point,
-                        prevPointRef.current,
-                        brushColorRef.current,
-                        brushSizeRef.current,
-                        "erase"
-                    );
-                    sendDataToConnections(
-                        "erase",
-                        point,
-                        null,
-                        brushColorRef.current,
-                        brushSizeRef.current
-                    );
-                }
-                prevPointRef.current = point;
+            const point = computePointsToDraw(e.clientX, e.clientY);
+
+            if (isDrawingRef.current || isEraserRef.current) {
+                console.log("first");
+                const drawType = isDrawingRef.current ? "free" : "erase";
+                handleDrawing(ctx, point, prevPointRef.current, drawType);
+            } else if (
+                isDrawRectRef.current ||
+                isDrawOvalRef.current ||
+                isDrawLineRef.current
+            ) {
+                console.log("second");
+                const drawType = isDrawRectRef.current
+                    ? "rect"
+                    : isDrawOvalRef.current
+                    ? "oval"
+                    : "line";
+                handleDrawing(ctx, mouseStartPoints.current, point, drawType);
             }
+
+            prevPointRef.current = point;
         };
         mouseMoveListenerRef.current = mouseMoveListener;
         window.addEventListener("mousemove", mouseMoveListener);
@@ -293,11 +244,7 @@ const useOnDraw = (
 
     function initMouseUpListener() {
         const mouseUpListener = () => {
-            isDrawingRef.current = false;
-            isDrawRectRef.current = false;
-            isDrawOvalRef.current = false;
-            isEraserRef.current = false;
-            isDrawLineRef.current = false;
+            toggleTools(false, false, false, false, false);
             let mainctx = primaryCanvasRef.current?.getContext("2d");
 
             mainctx?.drawImage(canvasRef.current!, 0, 0);
@@ -310,6 +257,28 @@ const useOnDraw = (
         window.addEventListener("mouseup", mouseUpListener);
     }
 
+    /**
+     *
+     * @param isDrawing boolean
+     * @param isDrawOval boolean
+     * @param isDrawRect boolean
+     * @param isDrawLine boolean
+     * @param isEraser boolean
+     */
+    function toggleTools(
+        isDrawing: boolean,
+        isDrawOval: boolean,
+        isDrawRect: boolean,
+        isDrawLine: boolean,
+        isEraser: boolean
+    ) {
+        isDrawingRef.current = isDrawing;
+        isDrawOvalRef.current = isDrawOval;
+        isDrawRectRef.current = isDrawRect;
+        isDrawLineRef.current = isDrawLine;
+        isEraserRef.current = isEraser;
+    }
+
     function initMouseDownListener() {
         const mouseDownListener = (e: MouseEvent) => {
             mouseStartPoints.current = computePointsToDraw(
@@ -318,29 +287,13 @@ const useOnDraw = (
             );
 
             if (isDrawRect) {
-                isDrawingRef.current = false;
-                isDrawOvalRef.current = false;
-                isDrawRectRef.current = true;
-                isDrawLineRef.current = false;
-                isEraserRef.current = false;
+                toggleTools(false, false, true, false, false);
             } else if (isDrawOval) {
-                isDrawingRef.current = false;
-                isDrawOvalRef.current = true;
-                isDrawRectRef.current = false;
-                isDrawLineRef.current = false;
-                isEraserRef.current = false;
+                toggleTools(false, true, false, false, false);
             } else if (isDrawLine) {
-                isDrawLineRef.current = true;
-                isDrawingRef.current = false;
-                isDrawOvalRef.current = false;
-                isDrawRectRef.current = false;
-                isEraserRef.current = false;
+                toggleTools(false, false, false, true, false);
             } else if (isEraser) {
-                isDrawingRef.current = false;
-                isDrawOvalRef.current = false;
-                isDrawRectRef.current = false;
-                isDrawLineRef.current = false;
-                isEraserRef.current = true;
+                toggleTools(false, false, false, false, true);
             } else {
                 isDrawingRef.current = true;
             }
@@ -359,6 +312,7 @@ const useOnDraw = (
         }
         return null;
     }
-    return [canvasRef, setCanvasRef, primaryCanvasRef, setPrimaryCanvasRef];
+
+    return [canvasRef, setCanvasRef, setPrimaryCanvasRef];
 };
 export default useOnDraw;
