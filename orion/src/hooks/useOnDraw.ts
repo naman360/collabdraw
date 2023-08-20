@@ -16,6 +16,7 @@ const useOnDraw = (
 ): [
     RefObject<HTMLCanvasElement>,
     RefCallback<HTMLCanvasElement>,
+    RefObject<HTMLCanvasElement>,
     RefCallback<HTMLCanvasElement>
 ] => {
     // Canvas refs
@@ -219,7 +220,6 @@ const useOnDraw = (
             const point = computePointsToDraw(e.clientX, e.clientY);
 
             if (isDrawingRef.current || isEraserRef.current) {
-                console.log("first");
                 const drawType = isDrawingRef.current ? "free" : "erase";
                 handleDrawing(ctx, point, prevPointRef.current, drawType);
             } else if (
@@ -227,7 +227,6 @@ const useOnDraw = (
                 isDrawOvalRef.current ||
                 isDrawLineRef.current
             ) {
-                console.log("second");
                 const drawType = isDrawRectRef.current
                     ? "rect"
                     : isDrawOvalRef.current
@@ -313,6 +312,6 @@ const useOnDraw = (
         return null;
     }
 
-    return [canvasRef, setCanvasRef, setPrimaryCanvasRef];
+    return [canvasRef, setCanvasRef, primaryCanvasRef, setPrimaryCanvasRef];
 };
 export default useOnDraw;
