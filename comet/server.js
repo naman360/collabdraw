@@ -21,6 +21,9 @@ io.on("connection", (socket) => {
     socket.on("mouse-up", (data) => {
         socket.broadcast.emit("mouse-up", data);
     });
+    socket.on("join_room", (room) => {
+        socket.join(room);
+    });
 });
 
 httpServer.listen(port, () => {
