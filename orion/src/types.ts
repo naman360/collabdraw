@@ -66,6 +66,7 @@ interface CanvasProps {
     isDrawOval: boolean;
     isDrawLine: boolean;
     isEraser: boolean;
+    roomId: string;
 }
 
 // Types Exports

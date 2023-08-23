@@ -5,6 +5,7 @@ import { RefCallback, RefObject, useEffect, useRef } from "react";
 import { Socket } from "socket.io-client";
 
 const useOnDraw = (
+    roomId: string,
     onDraw: OnDrawType,
     socketRef: Socket | null,
     brushSize: number,
@@ -82,6 +83,7 @@ const useOnDraw = (
     function drawReceivedDataOnCanvas(
         ctx: CanvasRenderingContext2D | null | undefined,
         object: {
+            roomId: string;
             type: string;
             data: { point: Point; prevPoint: Point; endPoints: Point };
             brushConfig: {
@@ -179,6 +181,7 @@ const useOnDraw = (
         if (!timeoutRef.current) clearTimeout(timeoutRef.current!);
         timeoutRef.current = setTimeout(() => {
             socketRef?.emit("canvas-data", {
+                roomId,
                 type,
                 data: { point, prevPoint: prevPointRef.current, endPoints },
                 brushConfig: {

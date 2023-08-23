@@ -7,16 +7,18 @@ import { v4 as uuidv4 } from "uuid";
 const RoomModal: FC<{
     socketRef: Socket | null;
     setIsJoined: (state: boolean) => void;
-}> = ({ socketRef, setIsJoined }) => {
-    const [roomId, setRoomId] = useState("");
+    roomId: string;
+    setRoomId: (state: string) => void;
+}> = ({ socketRef, setIsJoined, roomId, setRoomId }) => {
     const createRoom = () => {
         const roomId = uuidv4();
         socketRef?.emit("join_room", roomId);
-
+        setRoomId(roomId);
         setIsJoined(true);
     };
     const joinRoom = () => {
         socketRef?.emit("join_room", roomId);
+        setRoomId(roomId);
         setIsJoined(true);
     };
     return (

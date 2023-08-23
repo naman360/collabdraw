@@ -20,6 +20,7 @@ const Canvas: FC<CanvasProps> = ({
     isDrawOval,
     isDrawLine,
     isEraser,
+    roomId,
 }) => {
     // Setting background color of primary canvas at mount to avoid grey background while downloading
     useEffect(() => {
@@ -98,6 +99,7 @@ const Canvas: FC<CanvasProps> = ({
 
     const [canvasRef, setCanvasref, primaryCanvasRef, setPrimaryCanvasRef] =
         useOnDraw(
+            roomId,
             onDraw,
             socketRef,
             brushSize,

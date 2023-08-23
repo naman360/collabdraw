@@ -13,6 +13,8 @@ const Home: FC = () => {
     const [drawLine, setDrawLine] = useState<boolean>(false);
     const [isEraser, setIsEraser] = useState<boolean>(false);
     const [isJoined, setIsJoined] = useState(false);
+    const [roomId, setRoomId] = useState("");
+
     useEffect(() => {
         if (!socketState?.connected)
             setSocketState(io("http://localhost:5002"));
@@ -47,7 +49,18 @@ const Home: FC = () => {
     };
     return (
         <>
-            <RoomModal socketRef={socketState} setIsJoined={setIsJoined} />
+            {isJoined ? (
+                <h3 className="flex flex-col justify-center items-center mb-4">
+                    Room Id: {roomId}
+                </h3>
+            ) : (
+                <RoomModal
+                    socketRef={socketState}
+                    setIsJoined={setIsJoined}
+                    roomId={roomId}
+                    setRoomId={setRoomId}
+                />
+            )}
             {isJoined && (
                 <div className="h-screen p-2 w-full flex flex-column items-center">
                     <div className="p-2 flex flex-col items-center justify-center bg-slate-200 border border-black rounded-lg h-3/4">
@@ -105,6 +118,7 @@ const Home: FC = () => {
                     </div>
                     <div className="w-full flex items-center justify-center">
                         <Canvas
+                            roomId={roomId}
                             isDrawRect={drawRect}
                             isDrawOval={drawOval}
                             isEraser={isEraser}
