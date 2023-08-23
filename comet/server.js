@@ -16,7 +16,7 @@ io.on("connection", (socket) => {
     console.log("User Online");
 
     socket.on("canvas-data", (data) => {
-        socket.broadcast.emit("canvas-data", data);
+        socket.to(data.roomId).emit("canvas-data", data);
     });
     socket.on("mouse-up", (data) => {
         socket.broadcast.emit("mouse-up", data);
