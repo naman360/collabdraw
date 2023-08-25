@@ -82,4 +82,9 @@ const drawFree: DrawType = (canvasRef, start, end, ctx, color, width) => {
     ctx.fill();
 };
 
-export { drawFree, drawLine, drawOval, drawRectangle, eraseCanvas };
+const writeText: DrawType = (canvasRef, start, end, ctx, color, width) => {
+    if (!ctx) return;
+    ctx.font = "30px Verdana";
+    ctx.fillText("Hello World", start?.x!, start?.y!);
+};
+export { drawFree, drawLine, drawOval, drawRectangle, eraseCanvas, writeText };

@@ -65,6 +65,7 @@ interface CanvasProps {
     isDrawRect: boolean;
     isDrawOval: boolean;
     isDrawLine: boolean;
+    isText: boolean;
     isEraser: boolean;
     roomId: string;
 }

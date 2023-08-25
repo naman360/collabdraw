@@ -11,6 +11,7 @@ const Home: FC = () => {
     const [drawRect, setDrawRect] = useState<boolean>(false);
     const [drawOval, setDrawOval] = useState<boolean>(false);
     const [drawLine, setDrawLine] = useState<boolean>(false);
+    const [isWrite, setIsWrite] = useState<boolean>(false);
     const [isEraser, setIsEraser] = useState<boolean>(false);
     const [isJoined, setIsJoined] = useState(false);
     const [roomId, setRoomId] = useState("");
@@ -26,20 +27,33 @@ const Home: FC = () => {
                 setDrawRect(!drawRect);
                 setDrawOval(false);
                 setIsEraser(false);
+                setIsWrite(false);
+                setDrawLine(false);
                 break;
             case "oval":
                 setDrawOval(!drawOval);
                 setIsEraser(false);
                 setDrawRect(false);
+                setIsWrite(false);
+                setDrawLine(false);
                 break;
             case "line":
                 setDrawLine(!drawLine);
                 setIsEraser(false);
                 setDrawRect(false);
                 setDrawOval(false);
+                setIsWrite(false);
                 break;
             case "erase":
                 setIsEraser(!isEraser);
+                setDrawRect(false);
+                setIsWrite(false);
+                setDrawOval(false);
+                setDrawLine(false);
+                break;
+            case "write":
+                setIsWrite(!isWrite);
+                setIsEraser(false);
                 setDrawRect(false);
                 setDrawOval(false);
                 setDrawLine(false);
@@ -103,6 +117,15 @@ const Home: FC = () => {
                             Eraser
                         </button>
 
+                        <button
+                            className={`${
+                                isWrite && "border-2 border-black"
+                            } bg-white mt-3 p-2`}
+                            onClick={() => handleTool("write")}
+                        >
+                            Text
+                        </button>
+
                         <select
                             className="mt-3 cursor-pointer"
                             onChange={(e) =>
@@ -123,6 +146,7 @@ const Home: FC = () => {
                             isDrawOval={drawOval}
                             isEraser={isEraser}
                             isDrawLine={drawLine}
+                            isText={isWrite}
                             brushColor={brushColor}
                             brushSize={brushSize}
                             socketRef={socketState}

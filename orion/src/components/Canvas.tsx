@@ -7,6 +7,7 @@ import {
     drawOval,
     drawRectangle,
     eraseCanvas,
+    writeText,
 } from "@/utils/canvas-functions";
 import { FC, useEffect } from "react";
 
@@ -16,6 +17,7 @@ const Canvas: FC<CanvasProps> = ({
     socketRef,
     brushColor,
     brushSize,
+    isText,
     isDrawRect,
     isDrawOval,
     isDrawLine,
@@ -94,6 +96,16 @@ const Canvas: FC<CanvasProps> = ({
                     brushSize
                 );
                 break;
+            case "text":
+                writeText(
+                    canvasRef,
+                    point,
+                    endPoints!,
+                    ctx,
+                    brushColor,
+                    brushSize
+                );
+                break;
         }
     };
 
@@ -104,6 +116,7 @@ const Canvas: FC<CanvasProps> = ({
             socketRef,
             brushSize,
             brushColor,
+            isText,
             isDrawRect,
             isDrawOval,
             isDrawLine,
